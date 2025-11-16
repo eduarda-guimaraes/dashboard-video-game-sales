@@ -136,6 +136,67 @@ def interactive_chart(df):
     )
 
 
+def interactive_chart_genres(df):
+    st.markdown("### 🎯 Distribuição de vendas por gênero (gráfico interativo)")
+
+    genre_sales = (
+        df.groupby("Genre")["Total_Sales"]
+        .sum()
+        .sort_values(ascending=False)
+        .reset_index()
+    )
+
+    fig = px.bar(
+        genre_sales,
+        x="Genre",
+        y="Total_Sales",
+        labels={
+            "Genre": "Gênero",
+            "Total_Sales": "Vendas globais (milhões)"
+        },
+        title="Vendas totais por gênero",
+        color="Total_Sales",
+        color_continuous_scale="viridis"
+    )
+    
+    fig.update_xaxes(tickangle=45)
+    fig.update_layout(showlegend=False)
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.caption(
+        "Gráfico interativo mostrando a distribuição de vendas por gênero. "
+        "Passe o mouse sobre as barras para ver valores detalhados."
+    )
+
+
+def static_chart_platforms(df):
+    st.markdown("### 🎮 Top 10 plataformas por vendas (gráfico estático)")
+
+    top_platforms = (
+        df.groupby("Platform")["Total_Sales"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(10)
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    top_platforms.plot(kind="barh", ax=ax, color="coral")
+    
+    ax.set_title("Top 10 plataformas com maiores vendas globais", fontsize=14, fontweight="bold")
+    ax.set_xlabel("Vendas globais (milhões)", fontsize=12)
+    ax.set_ylabel("Plataforma", fontsize=12)
+    ax.invert_yaxis()
+    
+    plt.tight_layout()
+    st.pyplot(fig)
+
+    st.caption(
+        "Este gráfico mostra as 10 plataformas mais vendidas considerando os filtros atuais. "
+        "As barras horizontais facilitam a leitura dos nomes das plataformas."
+    )
+
+
 def documentation():
     st.markdown("### 📝 Como usar esta página")
 
@@ -183,11 +244,23 @@ def main():
     tab1, tab2 = st.tabs(["📊 Gráficos", "📘 Explicação"])
 
     with tab1:
+        # Primeira linha: gráficos interativos
+        st.markdown("#### Gráficos Interativos")
         col1, col2 = st.columns(2)
         with col1:
-            static_chart(df_filtered)
-        with col2:
             interactive_chart(df_filtered)
+        with col2:
+            interactive_chart_genres(df_filtered)
+        
+        st.markdown("---")
+        
+        # Segunda linha: gráficos estáticos
+        st.markdown("#### Gráficos Estáticos")
+        col3, col4 = st.columns(2)
+        with col3:
+            static_chart(df_filtered)
+        with col4:
+            static_chart_platforms(df_filtered)
 
     with tab2:
         documentation()
